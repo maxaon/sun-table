@@ -1,0 +1,42 @@
+{
+  "name": "sun-table",
+  "version": "0.0.0",
+  "description": "Table for angular js inspired by esvit ng-table",
+  "main": "gulpfile.js",
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {
+    "gulp-clean": "~0.3.1",
+    "gulp": "~3.8.10",
+    "gulp-typescript": "~2.3.0",
+    "gulp-sourcemaps": "~1.2.8",
+    "gulp-load-plugins": "~0.8.0",
+    "gulp-watch": "^3.0.0"
+  },
+  "devDependencies": {
+    "gulp-sourcemaps": "^1.2.8",
+    "gulp-load-plugins": "^0.8.0",
+    "gulp-clean": "^0.3.1",
+    "gulp": "^3.8.10",
+    "gulp-typescript": "^2.3.0",
+    "gulp-debug": "^1.0.1",
+    "vinyl": "^0.4.6",
+    "gulp-plumber": "^0.6.6",
+    "gulp-batch": "^1.0.4",
+    "gulp-connect": "^2.2.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maxaon/sun-table.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maxaon/sun-table/issues"
+  },
+  "homepage": "https://github.com/maxaon/sun-table"
+}

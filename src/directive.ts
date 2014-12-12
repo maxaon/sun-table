@@ -1,62 +1,70 @@
-/// <reference path="../types/jquery/jquJery.d.ts" />
+/// <reference path="../types/lodash/lodash.d.ts" />
+/// <reference path="../types/jquery/jquery.d.ts" />
 /// <reference path="./helpers.ts" />
+/// <reference path="./params.ts" />
 /// <reference path="./module.ts" />
 
-/**
- * ngTable: Table + Angular JS
- *
- * @author Vitalii Savchuk <esvit666@gmail.com>
- * @url https://github.com/esvit/ng-table/
- * @license New BSD License <http://creativecommons.org/licenses/BSD/>
- */
 module sun.table {
   export class CopyAttributes {
-    title :any;
-    headerClass :any;
-    headerClass :any;
+    sortable: string = "";
+    ngShow: string = null;
+    ngHide: string = null;
   }
-  export class TableColumns {
-    id :number;
-    copy :CopyAttributes;
-    sortable :string;
+  export class TableColumn {
+    id: number;
+    columnTitle: string = "";
+    columnClass: string = null;
+    copy: CopyAttributes = new CopyAttributes();
+  }
+
+  interface ITableScope extends ng.IScope {
+    $loading:boolean;
+    $table:SunTableParams;
+    $columns:TableColumn[];
   }
   function tagOrAttr(element, key) {
     return element[0] && (element[0].tagName === key || element.attr(key)) ? element : null
   }
 
-  function get(element, attibute, defaultValue, shouldDelete) {
+  function camelToDash(str) {
+    return str.replace(/\W+/g, '-')
+      .replace(/([a-z\d])([A-Z])/g, '$1-$2');
+  }
+
+  function get(element, attibute, defaultValue = undefined, shouldDelete = false): string {
     var val = defaultValue;
-    if (!element instanceof Node)
-      element = element[0]
+    if (!(element instanceof Node))
+      element = element[0];
     if (element.hasAttribute(attibute)) {
       val = element.getAttribute(attibute);
-      element.removeAttribute(attibute);
+      if (shouldDelete) {
+        element.removeAttribute(attibute);
+      }
     }
     return val;
   }
 
-  function getAndDelele(element, attibute, defaultValue) {
-    get(element, attibute, defaultValue, true)
+  function getAndDelete(element, attibute, defaultValue = undefined): string {
+    return get(element, attibute, defaultValue, true);
   }
 
-  SunTableModule.directive('sunTable', function ($compile :ng.ICompileService,
-                                                 $q :ng.IQService,
-                                                 $parse :ng.IParseService) {
-
+  SunTableModule.directive('sunTable', function ($compile: ng.ICompileService,
+                                                 $q: ng.IQService,
+                                                 $parse: ng.IParseService) {
       return {
         restrict: 'A',
         priority: 1001,
         scope: true,
         controller: 'SunTableController',
         controllerAs: 'ngTable',
-        compile: function (element :ng.IAugmentedJQuery, attrs) {
-          debugger
+        compile: function (element: ng.IAugmentedJQuery, attrs) {
           var table = tagOrAttr(element, 'table') || element.find('table');
 
-          var columns = [], i = 0, row = null;
+          var columns: TableColumn[] = [], i = 0, row = null;
 
           // custom header
           var thead = element.children('thead');
+          thead.detach();
 
           // IE 8 fix :not(.ng-table-group) selector
           angular.forEach(angular.element(element.find('tr')), function (tr) {
@@ -70,39 +78,24 @@ module sun.table {
           }
           angular.forEach(row.find('td'), function (item) {
             var el = angular.element(item);
-            var column :TableColumns = new TableColumns();
+            var column: TableColumn = new TableColumn();
             if (el.attr('ignore-cell') && 'true' === el.attr('ignore-cell')) {
               return;
             }
 
-            //var parsedTitle = parsedAttribute('title', ' '),
-            //  headerTemplateURL = parsedAttribute('header', false),
-            //  filter = parsedAttribute('filter', false)(),
-            //  filterTemplateURL = false,
-            //  filterName = false;
-
-            //if (filter && filter.$$name) {
-            //  filterName = filter.$$name;
-            //  delete filter.$$name;
-            //}
-            //if (filter && filter.templateURL) {
-            //  filterTemplateURL = filter.templateURL;
-            //  delete filter.templateURL;
-            //}
-
-            //el.attr('data-title-text', parsedTitle()); // this used in responsive table
 
             column.id = i++;
-            column.sortable = getAndDelele(item, 'sortable');
-            column.filter = getAndDelele(item, 'sortable');
-            column.copy.title = getAndDelele(item, 'column-title');
-            column.copy.headerClass = getAndDelele(item, 'column-class');
-            column.copy.show = get(item, 'ng-show');
-            column.copy.hide = get(item, 'ng-hide');
+
+            //column.filter = getAndDelete(item, 'sortable');
+            column.columnTitle = getAndDelete(item, 'column-title');
+            column.columnClass = getAndDelete(item, 'column-class');
+            column.copy.ngShow = get(item, 'ng-show');
+            column.copy.ngHide = get(item, 'ng-hide');
+            column.copy.sortable = getAndDelete(item, 'sortable');
 
             columns.push(column);
           });
-          return function (scope, element, attrs) {
+          return function (scope: ITableScope, element: ng.IAugmentedJQuery, attrs) {
             scope.$loading = false;
             scope.$columns = columns;
 
@@ -111,62 +104,43 @@ module sun.table {
                 return;
               }
               //scope.paramsModel = $parse(attrs.ngTable);
-              scope.params = params;
-            }), true);
-            //scope.parse = function (text) {
-            //  return angular.isDefined(text) ? text(scope) : '';
-            //};
-            if (attrs.showFilter) {
-              scope.$parent.$watch(attrs.showFilter, function (value) {
-                scope.show_filter = value;
-              });
-            }
-            angular.forEach(columns, function (column) {
-              var def;
-              if (!column.filterData) {
-                return;
-              }
-              def = $parse(column.filterData)(scope, {
-                $column: column
-              });
-              if (!(angular.isObject(def) && angular.isObject(def.promise))) {
-                throw new Error('Function ' + column.filterData + ' must be instance of $q.defer()');
-              }
-              delete column.filterData;
-              return def.promise.then(function (data) {
-                if (!angular.isArray(data)) {
-                  data = [];
-                }
-                data.unshift({
-                  title: '-',
-                  id: ''
-                });
-                column.data = data;
-              });
+              scope.$table = params;
+            }));
+            scope.$watch('$table.$params', function (val) {
+              scope.$table.reload();
+            }, true);
+
+            ['$data', '$loading', '$pages'].forEach(function (param) {
+              scope.$watch('$table.' + param, function (val) {
+                scope[param] = val;
+              })
             });
-            if (!element.hasClass('ng-table')) {
-              scope.templates = {
-                header: (attrs.templateHeader ? attrs.templateHeader : 'ng-table/header.html'),
-                pagination: (attrs.templatePagination ? attrs.templatePagination : 'ng-table/pager.html')
-              };
-              var headerTemplate = thead.length > 0 ? thead : angular.element(document.createElement('thead')).attr('ng-include', 'templates.header');
-              var paginationTemplate = angular.element(document.createElement('div')).attr({
-                'ng-table-pagination': 'params',
-                'template-url': 'templates.pagination'
+
+            var header = document.createElement('thead');
+            if (true) {
+              var titles = document.createElement('tr');
+              var filters = document.createElement('tr');
+              header.appendChild(titles);
+              columns.forEach(function (column: TableColumn) {
+                var td = document.createElement('td');
+                td.textContent = column.columnTitle;
+                angular.forEach(column.copy, function (value, key) {
+                  if (value) {
+                    key = camelToDash(key);
+                    td.setAttribute(key, value)
+                  }
+                });
+                titles.appendChild(td);
               });
-
-              element.find('thead').remove();
-
-              element.addClass('ng-table')
-                .prepend(headerTemplate)
-                .after(paginationTemplate);
-
-              $compile(headerTemplate)(scope);
-              $compile(paginationTemplate)(scope);
             }
-          };
+            element.prepend(header);
+            $compile(header)(scope);
+
+          }
+
         }
       }
     }
-  );
+  )
+
 }

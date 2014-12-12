@@ -6,3 +6,4 @@ out
 
 *.map
 src/*.js
+.tmp/
