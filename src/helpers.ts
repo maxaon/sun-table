@@ -53,4 +53,12 @@ module sun.helpers {
       return event
     }
   }
+
+  export function attrToBoolean(attrs, name) {
+    var value = attrs[name];
+    if (value === 'false' || value === '0')
+      return false;
+    return attrs.hasOwnProperty(name);
+
+  }
 }

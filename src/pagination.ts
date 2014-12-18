@@ -7,7 +7,13 @@
 module sun.table {
 
   SunTableModule
-    .directive('sun-table-footer',func)
+    .directive('sun-table-footer', function () {
+      return {
+        template: '<div sun-pagination="sto" class="pull-right"></div><div sun-rows-per-page="sto"></div>',
+        scope: {"$table": '=sunTableFooter'}
+      }
+
+    })
     .directive('sunPagination', function () {
       return {
         templateUrl: 'partials/pagination.html',

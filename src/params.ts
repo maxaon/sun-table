@@ -2,7 +2,7 @@
 /// <reference path="./helpers.ts" />
 /// <reference path="./module.ts" />
 module sun.table {
-  var $q: ng.IQService;
+  var $q: ng.IQService, $filter: ng.IFilterService;
 
   function isNumber(n: any): boolean {
     return !isNaN(parseFloat(n)) && isFinite(n);
@@ -16,13 +16,15 @@ module sun.table {
 
   export class Params {
     page: number = 1;
+    sorting: any = {};
+    filter: {[key:string]:string} = {};
     count: number;
-    filter: any;
-    sorting: any;
     total: number;
     group: any;
     groupBy: any;
   }
+
+  export enum OrderSteps {AscDesc = 2, AscDescReset = 3}
 
   export class Settings {
     data: any[]; //allows data to be set when table is initialized
@@ -32,7 +34,9 @@ module sun.table {
     counts: number[]
     populateGroups: Function;
     populateData: Function;
+    steps: OrderSteps
   }
+
   interface Page {
     type:string;
     number:number;
@@ -48,13 +52,13 @@ module sun.table {
     $data: any[];
     $pages: Page[];
 
-    constructor(params, settings) {
+    constructor(settings: Settings, params: Params) {
       super();
       this.$params = new Params();
       this.$settings = _.cloneDeep(SunTableParams.defaultSettings);
       this.parameters(params);
       this.settings(settings);
-      this.settings = settings;
+      //this.settings = settings;
     }
 
     parameters(newParameters, parseParamsFromUrl = false): any {
@@ -119,7 +123,8 @@ module sun.table {
     }
 
     set filter(value: any) {
-      this.$params.filter = value;
+      this.$params.filter = value
+      this.page = 1;
     }
 
     get total() {
@@ -150,14 +155,23 @@ module sun.table {
       return sorting;
     }
 
+    getStaticData() {
+      //debugger
+      var filtered = $filter('filter')(this.$settings.data, this.filter);
+      var ordered = $filter('orderBy')(filtered, this.orderBy());
+      this.total = ordered.length;
+      return ordered.slice((this.page - 1) * this.count, this.page * this.count);
+    }
+
+
     getData(): ng.IPromise<any> {
+      var result = [];
       if (this.$settings.populateData)
-        return $q.when(this.$settings.populateData.call(this, this.$params));
-      if (angular.isArray(this.$settings.data)) {
-        return $q.when(this.$settings.data.slice((this.page - 1) * this.count, this.page * this.count));
-      } else {
-        return $q.when([]);
+        result = this.$settings.populateData.call(this, this.$params);
+      else if (angular.isArray(this.$settings.data)) {
+        result = this.getStaticData();
       }
+      return $q.when(result);
     }
 
     getGroups(): ng.IPromise<any> {
@@ -166,7 +180,6 @@ module sun.table {
     }
 
     generatePagesArray(currentPage, totalItems, pageSize) {
-      debugger
       var maxBlocks, maxPage, maxPivotPages, minPage, numPages, pages;
       maxBlocks = 11;
       pages = [];
@@ -257,34 +270,26 @@ module sun.table {
       }
       return $q.when(data).then((data) => {
         this.$loading = false;
-        //if (this.$params.groupBy) {
-        //this.data =
-        //this.$groups = data;
-        //} else {
-        //this.data =
         this.$data = data;
-        //}
         this.$pages = this.generatePagesArray(this.page, this.total, this.count);
-        //this.$settings.$scope.$emit('ngTableAfterReloadData');
       });
     }
-
   }
-
 
   SunTableModule.provider('SunTableParams', function () {
       var provider = this;
       this.defaultSettings = {
-        $scope: null, // set by ngTable controller
-        $loading: false,
         data: null, //allows data to be set when table is initialized
         total: 0,
         defaultSort: 'desc',
         filterDelay: 750,
-        counts: [10, 25, 50, 100]
+        counts: [10, 25, 50, 100],
+        noDataText: "No data"
       };
-      this.$get = function (_$q_) {
+
+      this.$get = function (_$q_, _$filter_) {
         $q = _$q_;
+        $filter = _$filter_;
         SunTableParams.defaultSettings = provider.defaultSettings;
         return SunTableParams;
       };

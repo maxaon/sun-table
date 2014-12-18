@@ -6,7 +6,7 @@ gulp.task('clean', function () {
     .pipe(gp.clean());
 })
 gulp.task('dev', ['clean'], function () {
-  return gulp.src('src/*.ts').pipe(gp.watch('src/*.ts', gp.batch(function (files, cb) {
+  return gulp.src('src/**/*.ts').pipe(gp.watch('src/**/*.ts', gp.batch(function (files, cb) {
     //console.log('handler');
     files
       .pipe(gp.plumber())
@@ -19,7 +19,7 @@ gulp.task('dev', ['clean'], function () {
   })));
 });
 gulp.task('dev.watch', function () {
-  return gp.watch(['src/**/*.html', 'examples/**/*.html'], function (file) {
+  return gp.watch(['src/**/*.html', 'src/**/*.css', 'examples/**/*.html'], function (file) {
     gp.connect.reload().write(file);
 
   });
