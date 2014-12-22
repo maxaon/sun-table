@@ -23,7 +23,7 @@ module sun.pending {
   }
   angular.module('sun-pending', [])
     .constant("PendingOptions", {
-      template: "pending/pending.html",
+      template: "/pending/pending.html",
       image: null,
       text: null
     })
@@ -62,6 +62,7 @@ module sun.pending {
               overlap = $compile(template)(scope);
               element.append(overlap);
               showHiddenTable();
+              toggle(loading);
             });
 
           var NG_HIDE_CLASS = 'ng-hide';

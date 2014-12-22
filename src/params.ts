@@ -8,18 +8,11 @@ module sun.table {
     return !isNaN(parseFloat(n)) && isFinite(n);
   }
 
-  export interface ITableScope extends ng.IScope {
-    $data:any[];
-    $groups:any[];
-    pages:any[];
-  }
-
   export class Params {
     page: number = 1;
     sorting: any = {};
     filter: {[key:string]:string} = {};
     count: number;
-    total: number;
     group: any;
     groupBy: any;
   }
@@ -27,17 +20,17 @@ module sun.table {
   export enum OrderSteps {AscDesc = 2, AscDescReset = 3}
 
   export class Settings {
-    data: any[]; //allows data to be set when table is initialized
-    total: number;
-    defaultSort: string;
-    filterDelay: number;
-    counts: number[]
+    data: any[] = null; //allows data to be set when table is initialized
+    total: number = 0;
+    defaultSort: string = 'desc';
+    filterDelay: number = 750;
+    counts: number[] = [10, 25, 50, 100];
+    steps: OrderSteps = OrderSteps.AscDesc;
     populateGroups: Function;
     populateData: Function;
-    steps: OrderSteps
   }
 
-  interface Page {
+  export interface Page {
     type:string;
     number:number;
     active:boolean;
@@ -45,28 +38,39 @@ module sun.table {
 
   export class SunTableParams extends sun.helpers.Observable {
     static defaultSettings: Settings;
-    $params: Params;
+    $params: Params = new Params();
     $settings: Settings = new sun.table.Settings();
 
-    $loading: boolean;
+    $loading: boolean = false;
     $data: any[];
     $pages: Page[];
 
-    constructor(settings: Settings, params: Params) {
+    constructor(settings: Settings, params: Params);
+    constructor(populateData: Function, params: Params);
+    constructor(settings: any, params: Params) {
       super();
-      this.$params = new Params();
-      this.$settings = _.cloneDeep(SunTableParams.defaultSettings);
-      this.parameters(params);
+      if (angular.isFunction(settings)) {
+        settings = {
+          populateData: settings
+        };
+      }
+
+      this.settings(SunTableParams.defaultSettings);
       this.settings(settings);
-      //this.settings = settings;
+
+      this.parameters(params);
     }
 
+    //deprecated
     parameters(newParameters, parseParamsFromUrl = false): any {
       if (angular.isDefined(newParameters)) {
         for (var key in newParameters) {
+          if (!newParameters.hasOwnProperty(key)) {
+            continue
+          }
           var value = newParameters[key];
           if (parseParamsFromUrl && key.indexOf('[') >= 0) {
-            var keys = key.split(/\[(.*)\]/).reverse()
+            var keys = key.split(/\[(.*)\]/).reverse();
             var lastKey = '';
             for (var i = 0, len = keys.length; i < len; i++) {
               var name = keys[i];
@@ -81,7 +85,8 @@ module sun.table {
             }
             this.$params[lastKey] = angular.extend(this.$params[lastKey] || {}, value[lastKey]);
           } else {
-            this.$params[key] = (isNumber(newParameters[key]) ? parseFloat(newParameters[key]) : newParameters[key]);
+            this.$params[key] = (isNumber(newParameters[key]) ? parseFloat(newParameters[key]) :
+              angular.copy(newParameters[key]));
           }
         }
         return this;
@@ -89,6 +94,7 @@ module sun.table {
       return this.$params;
     }
 
+    // deprecated
     settings(newSettings): any {
       if (angular.isDefined(newSettings)) {
         if (angular.isArray(newSettings.data)) {
@@ -123,7 +129,7 @@ module sun.table {
     }
 
     set filter(value: any) {
-      this.$params.filter = value
+      this.$params.filter = value;
       this.page = 1;
     }
 
@@ -143,26 +149,24 @@ module sun.table {
       this.$params.sorting = value;
     }
 
-    isSortBy(field, direction) {
-      return angular.isDefined(this.$params.sorting[field]) && this.$params.sorting[field] == direction;
-    }
-
     orderBy() {
-      var sorting = [];
-      for (var column in this.$params.sorting) {
-        sorting.push((this.$params.sorting[column] === "asc" ? "+" : "-") + column);
+      var order = [],
+          sorting = this.$params.sorting;
+
+      for (var column in sorting) {
+        if (sorting.hasOwnProperty(column) && sorting[column]) {
+          order.push((sorting[column] === "asc" ? "+" : "-") + column);
+        }
       }
-      return sorting;
+      return order;
     }
 
-    getStaticData() {
-      //debugger
+    getStaticData(): any[] {
       var filtered = $filter('filter')(this.$settings.data, this.filter);
       var ordered = $filter('orderBy')(filtered, this.orderBy());
       this.total = ordered.length;
       return ordered.slice((this.page - 1) * this.count, this.page * this.count);
     }
-
 
     getData(): ng.IPromise<any> {
       var result = [];
@@ -176,7 +180,6 @@ module sun.table {
 
     getGroups(): ng.IPromise<any> {
       throw new Error("Not implemented");
-
     }
 
     generatePagesArray(currentPage, totalItems, pageSize) {
@@ -229,35 +232,35 @@ module sun.table {
       return pages;
     }
 
-    url(asString) {
-      asString = asString || false;
-      var pairs: any = (asString ? [] : {});
-      for (var key in this.$params) {
-        if (this.$params.hasOwnProperty(key)) {
-          var item = this.$params[key],
-              name = encodeURIComponent(key);
-          if (typeof item === "object") {
-            for (var subkey in item) {
-              if (!angular.isUndefined(item[subkey]) && item[subkey] !== "") {
-                var pname = name + "[" + encodeURIComponent(subkey) + "]";
-                if (asString) {
-                  pairs.push(pname + "=" + item[subkey]);
-                } else {
-                  pairs[pname] = item[subkey];
-                }
-              }
-            }
-          } else if (!angular.isFunction(item) && !angular.isUndefined(item) && item !== "") {
-            if (asString) {
-              pairs.push(name + "=" + encodeURIComponent(item));
-            } else {
-              pairs[name] = encodeURIComponent(item);
-            }
-          }
-        }
-      }
-      return pairs;
-    }
+    //url(asString) {
+    //  asString = asString || false;
+    //  var pairs: any = (asString ? [] : {});
+    //  for (var key in this.$params) {
+    //    if (this.$params.hasOwnProperty(key)) {
+    //      var item = this.$params[key],
+    //          name = encodeURIComponent(key);
+    //      if (typeof item === "object") {
+    //        for (var subkey in item) {
+    //          if (!angular.isUndefined(item[subkey]) && item[subkey] !== "") {
+    //            var pname = name + "[" + encodeURIComponent(subkey) + "]";
+    //            if (asString) {
+    //              pairs.push(pname + "=" + item[subkey]);
+    //            } else {
+    //              pairs[pname] = item[subkey];
+    //            }
+    //          }
+    //        }
+    //      } else if (!angular.isFunction(item) && !angular.isUndefined(item) && item !== "") {
+    //        if (asString) {
+    //          pairs.push(name + "=" + encodeURIComponent(item));
+    //        } else {
+    //          pairs[name] = encodeURIComponent(item);
+    //        }
+    //      }
+    //    }
+    //  }
+    //  return pairs;
+    //}
 
     reload() {
       var data;
@@ -278,14 +281,7 @@ module sun.table {
 
   SunTableModule.provider('SunTableParams', function () {
       var provider = this;
-      this.defaultSettings = {
-        data: null, //allows data to be set when table is initialized
-        total: 0,
-        defaultSort: 'desc',
-        filterDelay: 750,
-        counts: [10, 25, 50, 100],
-        noDataText: "No data"
-      };
+      this.defaultSettings = new Settings();
 
       this.$get = function (_$q_, _$filter_) {
         $q = _$q_;

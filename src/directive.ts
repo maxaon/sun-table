@@ -13,8 +13,6 @@ module sun.table {
     template: JQuery;
     filter: string;
     filterData: any;
-    columnTitle: string = "";
-    columnClass: string = null;
     copy: CopyAttributes = new CopyAttributes();
   }
 
@@ -23,13 +21,8 @@ module sun.table {
     $table:SunTableParams;
     $columns:TableColumn[];
   }
-  function tagOrAttr(element, key) {
+  function elementHasTagOrAttr(element, key) {
     return element[0] && (element[0].tagName === key || element.attr(key)) ? element : null
-  }
-
-  function camelToDash(str) {
-    return str.replace(/\W+/g, '-')
-      .replace(/([a-z\d])([A-Z])/g, '$1-$2');
   }
 
   function copyAttributes(to: JQuery, attrs) {
@@ -38,7 +31,6 @@ module sun.table {
         to.attr(key, attrs[key]);
       }
     }
-
   }
 
   function get(element, attibute, defaultValue = undefined, shouldDelete = false): string {
@@ -58,9 +50,7 @@ module sun.table {
     return get(element, attibute, defaultValue, true);
   }
 
-  SunTableModule.directive('sunTable', function ($compile: ng.ICompileService,
-                                                 $q: ng.IQService,
-                                                 $parse: ng.IParseService) {
+  SunTableModule.directive('sunTable', function ($compile: ng.ICompileService) {
       return {
         restrict: 'A',
         priority: 1001,
@@ -69,24 +59,14 @@ module sun.table {
         controllerAs: 'ngTable',
         require: 'sunTable',
         compile: function (element: ng.IAugmentedJQuery) {
-          var table = tagOrAttr(element, 'table') || element.find('table');
-
-          var columns: TableColumn[] = [], i = 0, row = null;
+          var table = element[0].tagName.toLowerCase() === 'table' ? element : element.find('table'),
+              columns: TableColumn[] = [],
+              i = 0;
 
           // custom header
-          var thead = element.children('thead');
+          var thead = table.children('thead');
           thead.detach();
 
-          // IE 8 fix :not(.ng-table-group) selector
-          angular.forEach(angular.element(element.find('tr')), function (tr) {
-            tr = angular.element(tr);
-            if (!tr.hasClass('ng-table-group') && !row) {
-              row = tr;
-            }
-          });
-          if (!row) {
-            return;
-          }
           angular.forEach(thead.find('[sun-head-cell]'), function (item) {
             var el = angular.element(item);
             el.detach();
@@ -98,7 +78,6 @@ module sun.table {
             column.filterData = getAndDelete(item, 'filter-data');
             column.copy.ngShow = get(item, 'ng-show');
             column.copy.ngHide = get(item, 'ng-hide');
-            //column.copy.sortable = getAndDelete(item, 'sortable');
 
             columns.push(column);
           });
@@ -106,22 +85,16 @@ module sun.table {
             scope.$loading = false;
             scope.$columns = columns;
 
-            scope.$watch(attrs.sunTable, (function (params) {
-              if (angular.isUndefined(params)) {
+            scope.$watch(attrs.sunTable, (function (table) {
+              if (angular.isUndefined(table)) {
                 return;
               }
-              ctrl.init(params);
-              scope.$table = params;
+              ctrl.init(table);
+              scope.$table = table;
             }));
-            scope.$watch('$table.$params', function (val) {
+            scope.$watch('$table.$params', function () {
               scope.$table.reload();
             }, true);
-
-            ['$data', '$loading', '$pages'].forEach(function (param) {
-              scope.$watch('$table.' + param, function (val) {
-                scope[param] = val;
-              })
-            });
 
             var header;
             if (thead.attr('partial') === 'false') {
@@ -157,15 +130,14 @@ module sun.table {
             element.prepend(header);
             $compile(header)(scope);
           };
-
         }
       }
     }
   );
+
   SunTableModule.directive('sunHeadCell', function () {
     return {
       require: '^sunTable',
-      //templateUrl: 'partials/header-cell.html',
       transclude: true,
       link: function (scope: ng.IScope, element: ng.IAugmentedJQuery, attrs, ctrl: SunTableController, transclude) {
         transclude(scope, function (clone) {

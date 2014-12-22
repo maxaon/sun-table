@@ -16,18 +16,19 @@ module sun.table {
     init(table) {
       this.$table = table;
       var $timeout = this.$timeout;
+
       var timerId = null,
           values = {},
           massUpdate = ()=> {
             this.setFilter(values);
           };
 
-
       this.requestFilterUpdate = function (k, v) {
         $timeout.cancel(timerId);
         values[k] = v;
         timerId = $timeout(massUpdate, this.$table.$settings.filterDelay)
       };
+
       this.requestForcedFilterUpdate = function (k, v) {
         $timeout.cancel(timerId);
         values[k] = v;
@@ -44,6 +45,7 @@ module sun.table {
       }
       var nextSortIndex = (steps.indexOf($table.sorting[column]) + 1) % steps.length,
           nextSort = steps[nextSortIndex];
+      // If ctrl or meta was not pressed then reset sorting
       if (!event || !(event.ctrlKey || event.metaKey)) {
         $table.sorting = {};
       }

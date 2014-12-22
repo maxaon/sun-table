@@ -8,31 +8,20 @@
     <script src="/bower_components/angular/angular.js"></script>
     <script src="/bower_components/angular-animate/angular-animate.js"></script>
     <script src="/module.js"></script>
+    <script src="/options.js"></script>
     <script src="/controller.js"></script>
     <script src="/directive.js"></script>
     <script src="/helpers.js"></script>
     <script src="/params.js"></script>
-    <script src="/pagination.js"></script>
     <script src="/filter/directive.js"></script>
+    <script src="/filter/controller.js"></script>
+    <script src="/pagination/directive.js"></script>
     <script src="/pending/pending.js"></script>
     <link rel="stylesheet" href="/partials/sun-table.css"/>
     <link rel="stylesheet" href="/pending/pending.css"/>
     <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css"/>
     <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap-theme.css"/>
     <script>
-        window.trackClass = function trackClass(e) {
-            e = $(e);
-            var cls = e.attr('class');
-            console.log(cls);
-            setInterval(function () {
-                var newCls = e.attr('class');
-                if (newCls != cls) {
-                    cls = newCls;
-                    console.log(cls);
-                }
-
-            }, 1)
-        }
         angular.module("app", ['ngAnimate', 'sun-table', 'sun-pending'])
                 .config(function (SunTableParamsProvider) {
                     SunTableParamsProvider.defaultSettings.steps = 3;
@@ -60,48 +49,43 @@
                         $scope.name = 213;
                     }, 800);
                     var deltas = [600, 600, 200, 200, 200, 800];
-                    $scope.sto = new SunTableParams(
-                            {
-                                populateData: function () {
-                                    var sto = this;
-                                    return $timeout(function () {
-                                        var filtered = $filter('filter')(data, sto.filter);
-                                        var ordered = $filter('orderBy')(filtered, sto.orderBy());
-                                        sto.total = ordered.length;
-                                        return ordered.slice((sto.page - 1) * sto.count, (sto.page) * sto.count - 1);
-                                    }, deltas.shift() || 800);
-                                }
+                    $scope.sto = new SunTableParams(function () {
+                                var sto = this;
+                                return $timeout(function () {
+                                    var filtered = $filter('filter')(data, sto.filter);
+                                    var ordered = $filter('orderBy')(filtered, sto.orderBy());
+                                    sto.total = ordered.length;
+                                    return ordered.slice((sto.page - 1) * sto.count, (sto.page) * sto.count - 1);
+                                }, deltas.shift() || 600);
                             }
                     );
-
                 });
-
     </script>
-    `
 </head>
 <body ng-app="app" ng-controller="AppCtrl" ng-cloak>
 <div class="div col-md-8 col-md-offset-2">
+
     <div sun-pagination="sto" class="pull-right"></div>
     <div sun-rows-per-page="sto"></div>
     <div pending="sto.$loading" debounce="500" debounce-out="200" flicker-fix="300" hide-loading>
         <table class="table table-bordered sun-table" sun-table="sto">
             <thead>
             <tr>
-                <th width="50%" sun-head-cell="name" sortable filter="text">Name</th>
-                <th width="50%" sun-head-cell="age" sortable filter="select" filter-data="{34:34}">Age</th>
+                <th style="width:50%" sun-head-cell="name" sortable filter="text">Name</th>
+                <th style="width:50%" sun-head-cell="age" sortable filter="select" filter-data="{34:34}">Age</th>
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="user in $data">
+            <tr ng-repeat="user in $table.$data">
                 <td>{{::user.name}}</td>
                 <td>{{::user.age}}</td>
             </tr>
-
             </tbody>
         </table>
     </div>
     <div sun-pagination="sto" class="pull-right"></div>
     <div sun-rows-per-page="sto"></div>
+
 </div>
 
 <script type="text/javascript">document.write('<script src="' + (location.protocol || 'http:') + '//' + (location.hostname || 'localhost') + ':35729/livereload.js?snipver=1" type="text/javascript"><\/script>')</script>

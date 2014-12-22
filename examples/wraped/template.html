@@ -1,0 +1,15 @@
+<div sun-pagination="$table" class="pull-right"></div>
+<div sun-rows-per-page="$table"></div>
+<div pending="$table.$loading" debounce="500" debounce-out="200" flicker-fix="300" hide-loading>
+    <table class="table table-bordered sun-table" sun-table="$table">
+        <tbody ng-show="$table.$data.length === 0">
+        <tr>
+            <td class="text-center" colspan="{{$columns.length}}">
+                No data
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div sun-pagination="$table" class="pull-right"></div>
+<div sun-rows-per-page="$table"></div>
