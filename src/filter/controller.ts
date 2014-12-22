@@ -1,6 +1,7 @@
 /// <reference path="../helpers.ts" />
-/// <reference path="../params.ts" />
 /// <reference path="../module.ts" />
+/// <reference path="../params.ts" />
+/// <reference path="../controller.ts" />
 module sun.table {
   export class SunFilterController {
     static $inject = ['$scope', '$attrs', '$q'];

@@ -1,8 +1,8 @@
 /// <reference path="../../types/lodash/lodash.d.ts" />
 /// <reference path="../../types/jquery/jquery.d.ts" />
 /// <reference path="../helpers.ts" />
-/// <reference path="../params.ts" />
 /// <reference path="../module.ts" />
+/// <reference path="../params.ts" />
 
 module sun.table {
   SunTableModule

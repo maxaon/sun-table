@@ -1,6 +1,6 @@
 /// <reference path="../types/lodash/lodash.d.ts" />
-/// <reference path="./helpers.ts" />
 /// <reference path="./module.ts" />
+/// <reference path="./helpers.ts" />
 module sun.table {
   var $q: ng.IQService, $filter: ng.IFilterService;
 
@@ -283,12 +283,12 @@ module sun.table {
       var provider = this;
       this.defaultSettings = new Settings();
 
-      this.$get = function (_$q_, _$filter_) {
+      this.$get = ['$q', '$filter', function (_$q_, _$filter_) {
         $q = _$q_;
         $filter = _$filter_;
         SunTableParams.defaultSettings = provider.defaultSettings;
         return SunTableParams;
-      };
+      }];
       return this;
     }
   );

@@ -1,6 +1,6 @@
+/// <reference path="../module.ts" />
 /// <reference path="../helpers.ts" />
 /// <reference path="../params.ts" />
-/// <reference path="../module.ts" />
 /// <reference path="./controller.ts" />
 
 module sun.table {

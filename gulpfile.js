@@ -1,10 +1,13 @@
 var gp = require('gulp-load-plugins')(),
-  gulp = require('gulp')
+  gulp = require('gulp'),
+  es = require('event-stream'),
+  streamqueue = require('streamqueue')
   ;
 gulp.task('clean', function () {
   gulp.src('.tmp')
     .pipe(gp.clean());
-})
+});
+
 gulp.task('dev', ['clean'], function () {
   return gulp.src('src/**/*.ts').pipe(gp.watch('src/**/*.ts', gp.batch(function (files, cb) {
     //console.log('handler');
@@ -23,6 +26,30 @@ gulp.task('dev.watch', function () {
     gp.connect.reload().write(file);
 
   });
+});
+gulp.task('build.clean', function () {
+  gulp.src('build/**/*.*')
+    .pipe(gp.clean());
+});
+
+gulp.task('build', ['build.clean'], function () {
+  var templates = gulp.src('src/**/*.html')
+    .pipe(gp.angularTemplatecache({module: 'sun-table'}));
+
+  var src = gulp.src('src/**/*.ts')
+    .pipe(gp.sourcemaps.init())
+    .pipe(gp.typescript({sortOutput: true}))
+    .pipe(gp.ngAnnotate())
+    .pipe(gp.concat('sun-table.js'))
+
+  src.pipe(gp.sourcemaps.write('.')).pipe(gulp.dest('build'));
+
+  streamqueue({objectMode: true}, src, templates)
+    .pipe(gp.concat('sun-table.js'))
+    .pipe(gulp.dest('build'))
+    .pipe(gp.uglify())
+    .pipe(gp.rename('sun-table.min.js'))
+    .pipe(gulp.dest('build'));
 });
 
 gulp.task('dev.connect', function () {
