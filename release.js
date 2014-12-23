@@ -35,10 +35,10 @@ check()
     }
   })
   .then(function () {
-    return exec('git commit -m "Release v' + version + '"');
+    return exec('git commit -m "release v' + version + '"');
   })
   .then(function () {
-    return exec('git flow release finish -m "Release v' + version + '" v' + version);
+    return exec('git flow release finish -m "release v' + version + '" v' + version);
   })
   .then(function () {
     return prompt({name: 'prompt', description: "Push changes? "});
@@ -81,6 +81,7 @@ function bumpVersions(version) {
       .done();
   }));
 }
+
 function exec(cmd, opions) {
   opions = opions || {};
   opions.async = true;

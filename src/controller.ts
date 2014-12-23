@@ -1,5 +1,6 @@
 /// <reference path="./module.ts" />
 /// <reference path="./helpers.ts" />
+/// <reference path="./params.ts" />
 module sun.table {
   export class SunTableController {
     static $inject = ['$scope', '$timeout'];
