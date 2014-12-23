@@ -1,8 +1,10 @@
 .temp
-.idea
+.idea/
 node_modules
 bower_components
 out
 
 *.map
-src/*.js
+src/**/*.js
+.tmp/
+build/

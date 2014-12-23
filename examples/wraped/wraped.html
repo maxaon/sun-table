@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="/bower_components/lodash/dist/lodash.js"></script>
+    <script src="/bower_components/jquery/dist/jquery.js"></script>
+    <script src="/bower_components/angular/angular.js"></script>
+    <script src="/bower_components/angular-animate/angular-animate.js"></script>
+    <script src="/module.js"></script>
+    <script src="/options.js"></script>
+    <script src="/controller.js"></script>
+    <script src="/directive.js"></script>
+    <script src="/helpers.js"></script>
+    <script src="/params.js"></script>
+    <script src="/filter/directive.js"></script>
+    <script src="/filter/controller.js"></script>
+    <script src="/pagination/directive.js"></script>
+    <script src="/pending/pending.js"></script>
+    <link rel="stylesheet" href="/partials/sun-table.css"/>
+    <link rel="stylesheet" href="/pending/pending.css"/>
+    <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css"/>
+    <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap-theme.css"/>
+    <script src="wraped.js"></script>
+</head>
+<body ng-app="app" ng-controller="AppCtrl" ng-cloak>
+<div class="div col-md-8 col-md-offset-2">
+    <table default-table="sto">
+        <thead>
+        <tr>
+            <th style="width:50%" sun-head-cell="name" sortable filter="text">Name</th>
+            <th style="width:50%" sun-head-cell="age" sortable filter="select" filter-data="{34:34}">Age</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="user in $table.$data">
+            <td>{{::user.name}}</td>
+            <td>{{::user.age}}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">document.write('<script src="' + (location.protocol || 'http:') + '//' + (location.hostname || 'localhost') + ':35729/livereload.js?snipver=1" type="text/javascript"><\/script>')</script>
+</body>
+</html>
