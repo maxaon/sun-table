@@ -3,7 +3,8 @@ var args = require('yargs').argv,
   shell = require('shelljs'),
   fs = require('fs'),
   $q = require('Q');
-prompt = $q.denodeify(prompt.start().get)
+prompt = $q.denodeify(prompt.start().get);
+
 var exec = function (cmd, opions) {
   opions = opions || {};
   opions.async = true;
@@ -18,12 +19,14 @@ var exec = function (cmd, opions) {
   });
   return defered.promise;
 };
+
 var version = args._[0];
 if (!version) {
   console.error("version is not specified");
-  return
+  return;
 }
 version = version.replace(/^v*/, '');
+var ABORTED = "Aborted";
 
 check()
   .then(function () {
@@ -38,32 +41,42 @@ check()
     return exec('git add dist/* bower.json package.json');
   })
   .then(function () {
-    return prompt("Please verify project and say yes to finish relase");
+    return prompt({name: 'prompt', description: "Please verify project and say yes to finish release"});
   })
   .then(function (resp) {
-    if (resp && resp[0].toLowerCase() === 'y') {
-      return exec('git flow release finish v' + version);
-    }
-    else {
-      return $q.reject();
+    if (resp.prompt[0].toLowerCase() !== 'y') {
+      return $q.reject(ABORTED);
     }
   })
   .then(function () {
-    return prompt("Push changes? ");
+    return exec('git commit -m "Release v' + version + '"');
+  })
+  .then(function () {
+    return exec('git flow release finish -m "Release v' + version + '" v' + version);
+  })
+  .then(function () {
+    return prompt({name: 'prompt', description: "Push changes? "});
   })
   .then(function (resp) {
     if (resp && resp[0].toLowerCase() === 'y') {
-      return $q.reject();
-      return exec('git flow release finish v' + version);
+      return exec('git push --tags');
     }
     else {
-      return $q.reject();
+      return $q.reject(ABORTED);
+    }
+  })
+  .catch(function (reason) {
+    if (reason === ABORTED) {
+      console.log("Aborted");
+    }
+    else {
+      return $q.reject(reason);
     }
   })
   .done();
 
 function check() {
-  return exec('git symbolic-ref HEAD')
+  return exec('git symbolic-ref HEAD', {silent: true})
     .then(function (resp) {
       if (resp.trim() !== 'refs/heads/develop') {
         throw new Error("Wrong branch");
