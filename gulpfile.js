@@ -3,12 +3,13 @@ var gp = require('gulp-load-plugins')(),
   es = require('event-stream'),
   streamqueue = require('streamqueue')
   ;
-gulp.task('clean', function () {
+
+gulp.task('dev.clean', function () {
   gulp.src('.tmp')
     .pipe(gp.clean());
 });
 
-gulp.task('dev', ['clean'], function () {
+gulp.task('dev', ['dev.clean'], function () {
   return gulp.src('src/**/*.ts').pipe(gp.watch('src/**/*.ts', gp.batch(function (files, cb) {
     //console.log('handler');
     files
@@ -21,18 +22,19 @@ gulp.task('dev', ['clean'], function () {
       .on('end', cb);
   })));
 });
+
 gulp.task('dev.watch', function () {
   return gp.watch(['src/**/*.html', 'src/**/*.css', 'examples/**/*.html'], function (file) {
     gp.connect.reload().write(file);
-
   });
 });
+
 gulp.task('build.clean', function () {
   gulp.src('build/**/*.*')
     .pipe(gp.clean());
 });
 
-gulp.task('build', ['build.clean'], function () {
+gulp.task('build.js', ['build.clean'], function () {
   var templates = gulp.src('src/**/*.html')
     .pipe(gp.angularTemplatecache({module: 'sun-table'}));
 
@@ -51,6 +53,15 @@ gulp.task('build', ['build.clean'], function () {
     .pipe(gp.rename('sun-table.min.js'))
     .pipe(gulp.dest('build'));
 });
+gulp.task('build.css', ['build.clean'], function () {
+  gulp.src('src/**/*.css')
+    .pipe(gp.concat('sun-table.css'))
+    .pipe(gulp.dest('build'))
+    .pipe(gp.cssmin())
+    .pipe(gp.rename('sun-table.min.css'))
+    .pipe(gulp.dest('build'));
+});
+gulp.task('build', ['build.js', 'build.css']);
 
 gulp.task('dev.connect', function () {
   gp.connect.server({
@@ -58,5 +69,6 @@ gulp.task('dev.connect', function () {
     livereload: true
   });
 });
+
 
 gulp.task('default', ['dev', 'dev.watch', 'dev.connect']);
