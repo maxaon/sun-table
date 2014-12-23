@@ -7,14 +7,14 @@
     "example": "examples"
   },
   "dependencies": {
+  },
+  "devDependencies": {
     "gulp-clean": "~0.3.1",
     "gulp": "~3.8.10",
     "gulp-typescript": "~2.3.0",
     "gulp-sourcemaps": "~1.2.8",
     "gulp-load-plugins": "~0.8.0",
-    "gulp-watch": "^3.0.0"
-  },
-  "devDependencies": {
+    "gulp-watch": "^3.0.0",
     "gulp-sourcemaps": "^1.2.8",
     "gulp-load-plugins": "^0.8.0",
     "gulp-clean": "^0.3.1",

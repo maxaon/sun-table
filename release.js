@@ -1,24 +1,10 @@
+"use strict";
 var args = require('yargs').argv,
   prompt = require('prompt'),
   shell = require('shelljs'),
   fs = require('fs'),
   $q = require('Q');
 prompt = $q.denodeify(prompt.start().get);
-
-var exec = function (cmd, opions) {
-  opions = opions || {};
-  opions.async = true;
-  var defered = $q.defer();
-  shell.exec(cmd, opions, function (code, resp) {
-    if (code) {
-      defered.reject(resp);
-    }
-    else {
-      defered.resolve(resp);
-    }
-  });
-  return defered.promise;
-};
 
 var version = args._[0];
 if (!version) {
@@ -33,7 +19,7 @@ check()
     return exec('git flow release start v' + version);
   })
   .then(function () {
-    return $q.all([exec('gulp build'), bumpVersions(version)])
+    return $q.all([exec('gulp build'), bumpVersions(version)]);
   })
   .then(function () {
     shell.rm('-rf', 'dist');
@@ -58,11 +44,11 @@ check()
     return prompt({name: 'prompt', description: "Push changes? "});
   })
   .then(function (resp) {
-    if (resp && resp[0].toLowerCase() === 'y') {
-      return exec('git push --tags');
+    if (resp.prompt[0].toLowerCase() !== 'y') {
+      return $q.reject(ABORTED);
     }
     else {
-      return $q.reject(ABORTED);
+      return exec('git push && git push --tags');
     }
   })
   .catch(function (reason) {
@@ -94,4 +80,18 @@ function bumpVersions(version) {
       })
       .done();
   }));
+}
+function exec(cmd, opions) {
+  opions = opions || {};
+  opions.async = true;
+  var deferred = $q.defer();
+  shell.exec(cmd, opions, function (code, resp) {
+    if (code) {
+      deferred.reject(resp);
+    }
+    else {
+      deferred.resolve(resp);
+    }
+  });
+  return deferred.promise;
 }

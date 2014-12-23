@@ -13,11 +13,13 @@
     "test",
     "tests"
   ],
-  "devDependencies": {
+  "main": [
+    "dist/sun-table.js",
+    "dist/sun-table.css"
+  ],
+  "dependencies": {
+    "lodash": "~2.4.1",
     "angular": "~1.3.6",
     "jquery": "~2.1.1"
-  },
-  "dependencies": {
-    "lodash": "~2.4.1"
   }
 }
