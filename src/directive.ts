@@ -21,9 +21,6 @@ module sun.table {
     $table:SunTableParams;
     $columns:TableColumn[];
   }
-  function elementHasTagOrAttr(element, key) {
-    return element[0] && (element[0].tagName === key || element.attr(key)) ? element : null
-  }
 
   function copyAttributes(to: JQuery, attrs) {
     for (var key in attrs) {
@@ -102,8 +99,9 @@ module sun.table {
             }
             else {
               header = document.createElement('thead');
-              var titles = document.createElement('tr');
-              var filters = document.createElement('tr');
+              var titles = document.createElement('tr'),
+                  filters = document.createElement('tr'),
+                  hasFilter = false;
 
               columns.forEach(function (column: TableColumn) {
                 var template = column.template.appendTo(titles);
@@ -111,6 +109,7 @@ module sun.table {
 
                 var filterContent = template.children('filter').detach();
                 if (column.filter || filterContent.length > 0) {
+                  hasFilter = true;
                   copyAttributes(th, {
                     'sun-head-filter': template.attr('sun-head-cell'),
                     'filter': column.filter,
@@ -125,7 +124,9 @@ module sun.table {
                 }
               });
               header.appendChild(titles);
-              header.appendChild(filters);
+              if (hasFilter) {
+                header.appendChild(filters);
+              }
             }
             element.prepend(header);
             $compile(header)(scope);
