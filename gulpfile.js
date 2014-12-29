@@ -39,14 +39,14 @@ gulp.task('build.js', ['build.clean'], function () {
     .pipe(gp.angularTemplatecache({module: 'sun-table'}));
 
   var src = gulp.src('src/**/*.ts')
-    .pipe(gp.sourcemaps.init())
+    //.pipe(gp.sourcemaps.init())
     .pipe(gp.typescript({sortOutput: true}))
     .pipe(gp.ngAnnotate())
-    .pipe(gp.concat('sun-table.js'))
+    .pipe(gp.concat('sun-table.js'));
 
-  src.pipe(gp.sourcemaps.write('.')).pipe(gulp.dest('build'));
+  //src.pipe(gp.sourcemaps.write('.')).pipe(gulp.dest('build'));
 
-  streamqueue({objectMode: true}, src, templates)
+  return streamqueue({objectMode: true}, src, templates)
     .pipe(gp.concat('sun-table.js'))
     .pipe(gulp.dest('build'))
     .pipe(gp.uglify())
