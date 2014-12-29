@@ -443,6 +443,7 @@ var sun;
 /// <reference path="./helpers.ts" />
 /// <reference path="./params.ts" />
 /// <reference path="./module.ts" />
+/// <reference path="./controller.ts" />
 var sun;
 (function (sun) {
     var table;
@@ -463,9 +464,6 @@ var sun;
             return TableColumn;
         })();
         _table.TableColumn = TableColumn;
-        function elementHasTagOrAttr(element, key) {
-            return element[0] && (element[0].tagName === key || element.attr(key)) ? element : null;
-        }
         function copyAttributes(to, attrs) {
             for (var key in attrs) {
                 if (attrs.hasOwnProperty(key) && attrs[key] !== undefined) {
@@ -535,13 +533,13 @@ var sun;
                         }
                         else {
                             header = document.createElement('thead');
-                            var titles = document.createElement('tr');
-                            var filters = document.createElement('tr');
+                            var titles = document.createElement('tr'), filters = document.createElement('tr'), hasFilter = false;
                             columns.forEach(function (column) {
                                 var template = column.template.appendTo(titles);
                                 var th = $(document.createElement('th')).appendTo(filters);
                                 var filterContent = template.children('filter').detach();
                                 if (column.filter || filterContent.length > 0) {
+                                    hasFilter = true;
                                     copyAttributes(th, {
                                         'sun-head-filter': template.attr('sun-head-cell'),
                                         'filter': column.filter,
@@ -556,7 +554,9 @@ var sun;
                                 }
                             });
                             header.appendChild(titles);
-                            header.appendChild(filters);
+                            if (hasFilter) {
+                                header.appendChild(filters);
+                            }
                         }
                         element.prepend(header);
                         $compile(header)(scope);
