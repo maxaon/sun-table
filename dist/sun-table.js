@@ -72,78 +72,6 @@ var sun;
     })(helpers = sun.helpers || (sun.helpers = {}));
 })(sun || (sun = {}));
 
-/// <reference path="./module.ts" />
-/// <reference path="./helpers.ts" />
-var sun;
-(function (sun) {
-    var table;
-    (function (_table) {
-        var SunTableController = (function () {
-            function SunTableController($scope, $timeout) {
-                this.$scope = $scope;
-                this.$timeout = $timeout;
-            }
-            SunTableController.prototype.init = function (table) {
-                var _this = this;
-                this.$table = table;
-                var $timeout = this.$timeout;
-                var timerId = null, values = {}, massUpdate = function () {
-                    _this.setFilter(values);
-                };
-                this.requestFilterUpdate = function (k, v) {
-                    $timeout.cancel(timerId);
-                    values[k] = v;
-                    timerId = $timeout(massUpdate, this.$table.$settings.filterDelay);
-                };
-                this.requestForcedFilterUpdate = function (k, v) {
-                    $timeout.cancel(timerId);
-                    values[k] = v;
-                    massUpdate();
-                };
-            };
-            SunTableController.prototype.sortBy = function (column, event) {
-                var $table = this.$table;
-                var defaultSort, steps = [defaultSort = $table.$settings.defaultSort, (defaultSort === 'asc' ? 'desc' : 'asc')];
-                if ($table.$settings.steps == 3 /* AscDescReset */) {
-                    steps.push(undefined);
-                }
-                var nextSortIndex = (steps.indexOf($table.sorting[column]) + 1) % steps.length, nextSort = steps[nextSortIndex];
-                // If ctrl or meta was not pressed then reset sorting
-                if (!event || !(event.ctrlKey || event.metaKey)) {
-                    $table.sorting = {};
-                }
-                if (nextSort)
-                    $table.sorting[column] = nextSort;
-                else
-                    delete $table.sorting[column];
-            };
-            SunTableController.prototype.setFilter = function (values, v) {
-                if (angular.isString(values)) {
-                    var n = {};
-                    n[values] = v;
-                    values = n;
-                }
-                this.$table.filter = _(this.$table.filter).extend(values).reduce(function (acc, v, k) {
-                    if (v != undefined) {
-                        acc[k] = v;
-                    }
-                    return acc;
-                }, {});
-            };
-            SunTableController.prototype.requestForcedFilterUpdate = function (name, value) {
-                throw new Error("Controller was not initialized");
-            };
-            SunTableController.prototype.requestFilterUpdate = function (name, value) {
-                throw new Error("Controller was not initialized");
-            };
-            SunTableController.$inject = ['$scope', '$timeout'];
-            return SunTableController;
-        })();
-        _table.SunTableController = SunTableController;
-        angular.module('sun-table').controller('SunTableController', SunTableController);
-    })(table = sun.table || (sun.table = {}));
-})(sun || (sun = {}));
-
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -436,6 +364,79 @@ var sun;
             }];
             return this;
         });
+    })(table = sun.table || (sun.table = {}));
+})(sun || (sun = {}));
+
+/// <reference path="./module.ts" />
+/// <reference path="./helpers.ts" />
+/// <reference path="./params.ts" />
+var sun;
+(function (sun) {
+    var table;
+    (function (_table) {
+        var SunTableController = (function () {
+            function SunTableController($scope, $timeout) {
+                this.$scope = $scope;
+                this.$timeout = $timeout;
+            }
+            SunTableController.prototype.init = function (table) {
+                var _this = this;
+                this.$table = table;
+                var $timeout = this.$timeout;
+                var timerId = null, values = {}, massUpdate = function () {
+                    _this.setFilter(values);
+                };
+                this.requestFilterUpdate = function (k, v) {
+                    $timeout.cancel(timerId);
+                    values[k] = v;
+                    timerId = $timeout(massUpdate, this.$table.$settings.filterDelay);
+                };
+                this.requestForcedFilterUpdate = function (k, v) {
+                    $timeout.cancel(timerId);
+                    values[k] = v;
+                    massUpdate();
+                };
+            };
+            SunTableController.prototype.sortBy = function (column, event) {
+                var $table = this.$table;
+                var defaultSort, steps = [defaultSort = $table.$settings.defaultSort, (defaultSort === 'asc' ? 'desc' : 'asc')];
+                if ($table.$settings.steps == 3 /* AscDescReset */) {
+                    steps.push(undefined);
+                }
+                var nextSortIndex = (steps.indexOf($table.sorting[column]) + 1) % steps.length, nextSort = steps[nextSortIndex];
+                // If ctrl or meta was not pressed then reset sorting
+                if (!event || !(event.ctrlKey || event.metaKey)) {
+                    $table.sorting = {};
+                }
+                if (nextSort)
+                    $table.sorting[column] = nextSort;
+                else
+                    delete $table.sorting[column];
+            };
+            SunTableController.prototype.setFilter = function (values, v) {
+                if (angular.isString(values)) {
+                    var n = {};
+                    n[values] = v;
+                    values = n;
+                }
+                this.$table.filter = _(this.$table.filter).extend(values).reduce(function (acc, v, k) {
+                    if (v != undefined) {
+                        acc[k] = v;
+                    }
+                    return acc;
+                }, {});
+            };
+            SunTableController.prototype.requestForcedFilterUpdate = function (name, value) {
+                throw new Error("Controller was not initialized");
+            };
+            SunTableController.prototype.requestFilterUpdate = function (name, value) {
+                throw new Error("Controller was not initialized");
+            };
+            SunTableController.$inject = ['$scope', '$timeout'];
+            return SunTableController;
+        })();
+        _table.SunTableController = SunTableController;
+        angular.module('sun-table').controller('SunTableController', SunTableController);
     })(table = sun.table || (sun.table = {}));
 })(sun || (sun = {}));
 
@@ -840,4 +841,9 @@ var sun;
     })(pending = sun.pending || (sun.pending = {}));
 })(sun || (sun = {}));
 
-//# sourceMappingURL=sun-table.js.map
+angular.module("sun-table").run(["$templateCache", function($templateCache) {$templateCache.put("pending/pending.html","<div class=\"pending-overlap\">\r\n    <div class=\"center-wrap\">\r\n        <div class=\"centered\">\r\n            <span>Loading...</span>\r\n        </div>\r\n    </div>\r\n</div>");
+$templateCache.put("filter/partials/select.html","<select class=\"input-filter form-control\"\r\n        ng-controller=\"SunFilterSelectController\"\r\n        instant-filter=\"\"\r\n        ng-model=\"filter.value\"\r\n        ng-options=\"{{template}}\" id=\"\">\r\n    <option value=\"\">\r\n        &mdash;&mdash;&mdash;&mdash;&mdash;\r\n    </option>\r\n</select>\r\n\r\n");
+$templateCache.put("filter/partials/text.html","<input type=\"text\" ng-model=\"filter.value\"\r\n       class=\"input-filter form-control\"/>");
+$templateCache.put("pagination/partials/footer.html","<div sun-pagination=\"$table\" class=\"pull-right\"></div>\r\n<div sun-rows-per-page=\"$table\"></div>");
+$templateCache.put("pagination/partials/pagination.html","<ul class=\"pagination sun-table-pagination\">\r\n    <li ng-class=\"{\'disabled\': !page.active}\" ng-repeat=\"page in $table.$pages\" ng-switch=\"page.type\">\r\n        <a ng-switch-when=\"prev\" ng-click=\"$table.page = page.number\" href=\"\">&laquo;</a>\r\n        <a ng-switch-when=\"first\" ng-click=\"$table.page = page.number\" href=\"\"><span\r\n                ng-bind=\"page.number\"></span></a>\r\n        <a ng-switch-when=\"page\" ng-click=\"$table.page = page.number\" href=\"\"><span ng-bind=\"page.number\"></span></a>\r\n        <a ng-switch-when=\"more\" ng-click=\"$table.page = page.number\" href=\"\">&#8230;</a>\r\n        <a ng-switch-when=\"last\" ng-click=\"$table.page = page.number\" href=\"\"><span ng-bind=\"page.number\"></span></a>\r\n        <a ng-switch-when=\"next\" ng-click=\"$table.page = page.number\" href=\"\">&raquo;</a>\r\n    </li>\r\n</ul>");
+$templateCache.put("pagination/partials/rows-per-page.html","<ul ng-if=\"$table.$settings.counts.length\" class=\"pagination\">\r\n    <li ng-repeat=\"count in $table.$settings.counts\"\r\n        ng-class=\"{\'active\':$table.count == count}\"\r\n        ng-click=\"$table.count=count\" >\r\n        <a href=\"\" ng-bind=\"count\"></a>\r\n    </li>\r\n</ul>");}]);
