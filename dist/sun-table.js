@@ -770,7 +770,7 @@ var sun;
             }
         }
         angular.module('sun-pending', []).constant("PendingOptions", {
-            template: "/pending/pending.html",
+            template: "pending/pending.html",
             image: null,
             text: null
         }).directive('pending', ["$animate", "$http", "$templateCache", "PendingOptions", "$compile", "$timeout", function ($animate, $http, $templateCache, PendingOptions, $compile, $timeout) {
