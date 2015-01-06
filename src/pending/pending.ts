@@ -23,7 +23,7 @@ module sun.pending {
   }
   angular.module('sun-pending', [])
     .constant("PendingOptions", {
-      template: "/pending/pending.html",
+      template: "pending/pending.html",
       image: null,
       text: null
     })
