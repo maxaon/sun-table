@@ -6,16 +6,43 @@ var args = require('yargs').argv,
   $q = require('Q');
 prompt = $q.denodeify(prompt.start().get);
 
-var version = args._[0];
-if (!version) {
-  console.error("version is not specified");
-  return;
+var version, versionPromise;
+function incrementVersion(baseVersion) {
+  var last;
+  baseVersion = baseVersion.split(".");
+  last = (baseVersion.length - 1);
+  baseVersion[last] = parseInt(baseVersion[last]) + 1;
+  return baseVersion.join(".");
 }
-version = version.replace(/^v*/, '');
+if (args._[0]) {
+  versionPromise = $q.when(args._[0]);
+}
+else {
+  var versionGuess;
+  versionPromise = $q.nfcall(fs.readFile, 'bower.json', {encoding: 'utf8'})
+    .then(JSON.parse)
+    .then(function (config) {
+      versionGuess = incrementVersion(config.version);
+      return prompt({name: 'prompt', description: "Specify version or use default (" + versionGuess + ")"});
+    })
+    .then(function (resp) {
+      if (resp.prompt) {
+        if (!(/^(\d*\.){1,3}\d*$/.test(resp.prompt))) {
+          return $q.reject("Wrong version format");
+        }
+        return resp.prompt;
+      }
+      return versionGuess;
+    })
+}
 var ABORTED = "Aborted";
 
 check()
   .then(function () {
+    return versionPromise;
+  })
+  .then(function (v) {
+    version = v.replace(/^v*/, '');
     return exec('git flow release start v' + version);
   })
   .then(function () {
@@ -56,6 +83,7 @@ check()
       console.log("Aborted");
     }
     else {
+      console.error(reason);
       return $q.reject(reason);
     }
   })
@@ -81,6 +109,7 @@ function bumpVersions(version) {
       .done();
   }));
 }
+
 
 function exec(cmd, opions) {
   opions = opions || {};
