@@ -266,6 +266,9 @@ module sun.table {
       var data;
 
       this.$loading = true;
+      if (this.emit('beforeReload').prevented) {
+        return $q.reject("Reload canceled");
+      }
       if (this.$params.groupBy) {
         data = this.getGroups();
       } else {
@@ -275,6 +278,8 @@ module sun.table {
         this.$loading = false;
         this.$data = data;
         this.$pages = this.generatePagesArray(this.page, this.total, this.count);
+        this.emit("afterReload", data);
+        return data;
       });
     }
   }
