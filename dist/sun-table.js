@@ -338,6 +338,9 @@ var sun;
                 var _this = this;
                 var data;
                 this.$loading = true;
+                if (this.emit('beforeReload').prevented) {
+                    return $q.reject("Reload canceled");
+                }
                 if (this.$params.groupBy) {
                     data = this.getGroups();
                 }
@@ -348,6 +351,8 @@ var sun;
                     _this.$loading = false;
                     _this.$data = data;
                     _this.$pages = _this.generatePagesArray(_this.page, _this.total, _this.count);
+                    _this.emit("afterReload", data);
+                    return data;
                 });
             };
             return SunTableParams;
@@ -807,12 +812,11 @@ var sun;
                             tempClasses: NG_HIDE_IN_PROGRESS_CLASS
                         });
                     };
-                    var timer, requestTime, flickerFix = parse(attrs.flickerFix), debounce = parse(attrs.debounce), originalDebounce = debounce, debounceOut = parse(attrs.debounceOut);
+                    var timer, requestTime = 0, flickerFix = parse(attrs.flickerFix), debounce = parse(attrs.debounce), originalDebounce = debounce, debounceOut = parse(attrs.debounceOut);
                     if (sun.helpers.attrToBoolean(attrs, 'debounce')) {
                         toggle = _.wrap(toggle, function (toggle, loading) {
                             if (!loading) {
                                 var delta = (+new Date) - requestTime - originalDebounce; // Time of displaying loading overlay whit debounce enabled
-                                console.log(delta);
                                 if (delta > 0 && delta < flickerFix) {
                                     debounce = debounceOut = 0;
                                 }
