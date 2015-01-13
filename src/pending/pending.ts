@@ -74,7 +74,7 @@ module sun.pending {
             });
           };
 
-          var timer, requestTime,
+          var timer, requestTime = 0,
               flickerFix = parse(attrs.flickerFix),
               debounce = parse(attrs.debounce),
               originalDebounce = debounce,
@@ -84,7 +84,6 @@ module sun.pending {
             toggle = _.wrap(toggle, function (toggle, loading) {
               if (!loading) {
                 var delta = (+new Date) - requestTime - originalDebounce; // Time of displaying loading overlay whit debounce enabled
-                console.log(delta);
                 if (delta > 0 && delta < flickerFix) { // If overlay flicks
                   debounce = debounceOut = 0;
                 }
