@@ -538,15 +538,26 @@ var sun;
                         }
                         else {
                             header = document.createElement('thead');
-                            var titles = document.createElement('tr'), filters = document.createElement('tr'), hasFilter = false;
+                            var titles = document.createElement('tr'), filters = document.createElement('tr'), hasFilter = false, match;
                             columns.forEach(function (column) {
                                 var template = column.template.appendTo(titles);
                                 var th = $(document.createElement('th')).appendTo(filters);
                                 var filterContent = template.children('filter').detach();
                                 if (column.filter || filterContent.length > 0) {
                                     hasFilter = true;
+                                    var filterType, filterFieldName;
+                                    if (match = column.filter.match(/^\s*([\s\S]+?)\s+as\s+([\s\S]+?)\s*$/)) {
+                                        filterType = match[1];
+                                        filterFieldName = match[2];
+                                    }
+                                    else {
+                                        filterType = column.filter;
+                                        filterFieldName = template.attr('sun-head-cell');
+                                    }
                                     copyAttributes(th, {
-                                        'sun-head-filter': template.attr('sun-head-cell'),
+                                        'sun-head-filter': "",
+                                        'type': filterType,
+                                        'name': filterFieldName,
                                         'filter': column.filter,
                                         'filter-data': column.filterData
                                     });
@@ -691,7 +702,7 @@ var sun;
                 transclude: true,
                 link: function (scope, element, attrs, ctrls, transclude) {
                     var tableCtrl = ctrls[0], filterCtrl = ctrls[1];
-                    var type = attrs.filter;
+                    var type = attrs.type;
                     if (type) {
                         scope.template = SunTableTemplates.prefix + SunTableTemplates.filter[type];
                         element.append("<div ng-include=\"template\"></div>");
