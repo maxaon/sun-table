@@ -15,7 +15,7 @@ module sun.table {
         var tableCtrl: SunTableController = ctrls[0],
             filterCtrl: SunFilterController = ctrls[1];
 
-        var type = attrs.filter;
+        var type = attrs.type;
         if (type) {
           scope.template = SunTableTemplates.prefix + SunTableTemplates.filter[type];
           element.append("<div ng-include=\"template\"></div>");
