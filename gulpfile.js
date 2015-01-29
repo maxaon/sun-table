@@ -15,7 +15,7 @@ gulp.task('dev', ['dev.clean'], function () {
     files
       .pipe(gp.plumber())
       .pipe(gp.sourcemaps.init())
-      .pipe(gp.typescript())
+      .pipe(gp.typescript({target: 'ES5'}))
       .pipe(gp.sourcemaps.write())
       .pipe(gulp.dest('.tmp/'))
       .pipe(gp.connect.reload())
@@ -40,7 +40,7 @@ gulp.task('build.js', ['build.clean'], function () {
 
   var src = gulp.src('src/**/*.ts')
     //.pipe(gp.sourcemaps.init())
-    .pipe(gp.typescript({sortOutput: true}))
+    .pipe(gp.typescript({sortOutput: true, target: 'ES5'}))
     .pipe(gp.ngAnnotate())
     .pipe(gp.concat('sun-table.js'));
 
