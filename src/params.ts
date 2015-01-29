@@ -274,13 +274,17 @@ module sun.table {
       } else {
         data = this.getData();
       }
-      return $q.when(data).then((data) => {
-        this.$loading = false;
-        this.$data = data;
-        this.$pages = this.generatePagesArray(this.page, this.total, this.count);
-        this.emit("afterReload", data);
-        return data;
-      });
+      return $q.when(data)
+        .then((data) => {
+          this.$data = data;
+          this.$pages = this.generatePagesArray(this.page, this.total, this.count);
+          this.emit("afterReload", data);
+          return data;
+        })
+        .finally(()=> {
+          this.$loading = false;
+        }
+      )
     }
   }
 

@@ -348,11 +348,12 @@ var sun;
                     data = this.getData();
                 }
                 return $q.when(data).then(function (data) {
-                    _this.$loading = false;
                     _this.$data = data;
                     _this.$pages = _this.generatePagesArray(_this.page, _this.total, _this.count);
                     _this.emit("afterReload", data);
                     return data;
+                }).finally(function () {
+                    _this.$loading = false;
                 });
             };
             return SunTableParams;
@@ -507,7 +508,7 @@ var sun;
                     // custom header
                     var thead = table.children('thead');
                     thead.detach();
-                    angular.forEach(thead.find('[sun-head-cell]'), function (item) {
+                    angular.forEach(thead.find('tr > th, [sun-head-cell]'), function (item) {
                         var el = angular.element(item);
                         el.detach();
                         var column = new TableColumn();
@@ -520,7 +521,7 @@ var sun;
                         columns.push(column);
                     });
                     return function (scope, element, attrs, ctrl) {
-                        scope.$loading = false;
+                        //scope.$loading = false;
                         scope.$columns = columns;
                         scope.$watch(attrs.sunTable, (function (table) {
                             if (angular.isUndefined(table)) {
@@ -861,4 +862,4 @@ $templateCache.put("filter/partials/select.html","<select class=\"input-filter f
 $templateCache.put("filter/partials/text.html","<input type=\"text\" ng-model=\"filter.value\"\r\n       class=\"input-filter form-control\"/>");
 $templateCache.put("pagination/partials/footer.html","<div sun-pagination=\"$table\" class=\"pull-right\"></div>\r\n<div sun-rows-per-page=\"$table\"></div>");
 $templateCache.put("pagination/partials/pagination.html","<ul class=\"pagination sun-table-pagination\">\r\n    <li ng-class=\"{\'disabled\': !page.active}\" ng-repeat=\"page in $table.$pages\" ng-switch=\"page.type\">\r\n        <a ng-switch-when=\"prev\" ng-click=\"$table.page = page.number\" href=\"\">&laquo;</a>\r\n        <a ng-switch-when=\"first\" ng-click=\"$table.page = page.number\" href=\"\"><span\r\n                ng-bind=\"page.number\"></span></a>\r\n        <a ng-switch-when=\"page\" ng-click=\"$table.page = page.number\" href=\"\"><span ng-bind=\"page.number\"></span></a>\r\n        <a ng-switch-when=\"more\" ng-click=\"$table.page = page.number\" href=\"\">&#8230;</a>\r\n        <a ng-switch-when=\"last\" ng-click=\"$table.page = page.number\" href=\"\"><span ng-bind=\"page.number\"></span></a>\r\n        <a ng-switch-when=\"next\" ng-click=\"$table.page = page.number\" href=\"\">&raquo;</a>\r\n    </li>\r\n</ul>");
-$templateCache.put("pagination/partials/rows-per-page.html","<ul ng-if=\"$table.$settings.counts.length\" class=\"pagination\">\r\n    <li ng-repeat=\"count in $table.$settings.counts\"\r\n        ng-class=\"{\'active\':$table.count == count}\"\r\n        ng-click=\"$table.count=count\" >\r\n        <a href=\"\" ng-bind=\"count\"></a>\r\n    </li>\r\n</ul>");}]);
+$templateCache.put("pagination/partials/rows-per-page.html","<ul ng-if=\"$table.$settings.counts.length\" class=\"pagination\">\r\n    <li ng-repeat=\"count in $table.$settings.counts\"\r\n        ng-class=\"{\'active\':$table.count == count}\"\r\n        ng-click=\"$table.count=count\">\r\n        <a href=\"\" ng-bind=\"count\"></a>\r\n    </li>\r\n</ul>");}]);

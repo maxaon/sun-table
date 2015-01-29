@@ -65,7 +65,7 @@ module sun.table {
           var thead = table.children('thead');
           thead.detach();
 
-          angular.forEach(thead.find('[sun-head-cell]'), function (item) {
+          angular.forEach(thead.find('tr > th, [sun-head-cell]'), function (item) {
             var el = angular.element(item);
             el.detach();
             var column: TableColumn = new TableColumn();
@@ -80,7 +80,7 @@ module sun.table {
             columns.push(column);
           });
           return function (scope: ITableScope, element: ng.IAugmentedJQuery, attrs, ctrl: SunTableController) {
-            scope.$loading = false;
+            //scope.$loading = false;
             scope.$columns = columns;
 
             scope.$watch(attrs.sunTable, (function (table) {
